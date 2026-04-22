@@ -9,23 +9,22 @@ import SwiftUI
 import WebKit
 
 struct CustomWebView: NSViewRepresentable {
-    let url: URL
+    @ObservedObject var store: WebViewStore
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
     
     func makeNSView(context: Context) -> WKWebView {
+        let webView = store.webView
+        webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
+
         let config = WKWebViewConfiguration()
         config.defaultWebpagePreferences.allowsContentJavaScript = true
         
-        let webView = WKWebView(frame: .zero, configuration: config)
-        webView.navigationDelegate = context.coordinator
-        webView.uiDelegate = context.coordinator
         
         webView.allowsBackForwardNavigationGestures = true
-        
-        webView.load(URLRequest(url: url))
         
         return webView
     }
