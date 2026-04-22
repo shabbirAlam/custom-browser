@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var webStore = WebViewStore()
-    @State private var urlText: String = ""
+    @EnvironmentObject private var webStore: WebViewStore
     
     var body: some View {
         VStack {
@@ -27,12 +26,8 @@ struct HomeView: View {
             }
             CustomWebView(store: webStore)
                 .onAppear {
-                    webStore.load(urlText)
+                    webStore.load(webStore.currentURL)
                 }
-                .onReceive(webStore.$currentURL) { newURL in
-                    urlText = newURL
-                }
-            
         }
         .padding()
     }
@@ -61,8 +56,8 @@ struct HomeView: View {
                 Image(systemName: "arrow.clockwise")
             }
             
-            TextField("Enter URL", text: $urlText, onCommit: {
-                webStore.load(urlText)
+            TextField("Enter URL", text: $webStore.currentURL, onCommit: {
+                webStore.load(webStore.currentURL)
             })
             .textFieldStyle(.roundedBorder)
             .frame(maxWidth: .infinity)

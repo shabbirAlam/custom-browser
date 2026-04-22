@@ -10,47 +10,32 @@ import WebKit
 import SwiftUI
 
 final class WebViewStore: NSObject, ObservableObject {
+    static var defaultURL: String {
+        "https://www.google.com"
+    }
+    
     let webView: WKWebView
     
+    @Published var history: [HistoryItem] = []
     @Published var canGoBack: Bool = false
     @Published var canGoForward: Bool = false
-    @Published var currentURL: String = "https://www.google.com"
+    @Published var currentURL: String = defaultURL
     @Published var progress: Double = 0.0
     @Published var isLoading: Bool = false
     
     override init() {
         let config = WKWebViewConfiguration()
+        config.websiteDataStore = .default()
         config.defaultWebpagePreferences.allowsContentJavaScript = true
         
         webView = WKWebView(frame: .zero, configuration: config)
+        webView.customUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X)"
         super.init()
-        
-        webView.addObserver(self, forKeyPath: "canGoBack", options: .new, context: nil)
-        webView.addObserver(self, forKeyPath: "canGoForward", options: .new, context: nil)
-        webView.addObserver(self, forKeyPath: "URL", options: .new, context: nil)
     }
-    
-    deinit {
-        webView.removeObserver(self, forKeyPath: "canGoBack")
-        webView.removeObserver(self, forKeyPath: "canGoForward")
-        webView.removeObserver(self, forKeyPath: "URL")
-    }
-    
-    override func observeValue(
-        forKeyPath keyPath: String?,
-        of object: Any?,
-        change: [NSKeyValueChangeKey : Any]?,
-        context: UnsafeMutableRawPointer?
-    ) {
-        DispatchQueue.main.async {
-            self.canGoBack = self.webView.canGoBack
-            self.canGoForward = self.webView.canGoForward
-            self.currentURL = self.webView.url?.absoluteString ?? ""
-        }
-    }
-    
-    // MARK: - Actions
-    
+}
+
+// MARK: - Actions
+extension WebViewStore {
     func load(_ url: URL) {
         webView.load(URLRequest(url: url))
     }
@@ -61,7 +46,7 @@ final class WebViewStore: NSObject, ObservableObject {
         
         // If contains space → search
         if trimmed.contains(" ") {
-            searchOnGoogle(trimmed)
+            search(trimmed)
             return
         }
         
@@ -82,7 +67,11 @@ final class WebViewStore: NSObject, ObservableObject {
         }
         
         // Fallback → search
-        searchOnGoogle(trimmed)
+        search(trimmed)
+    }
+    
+    func goToHome() {
+        load(Self.defaultURL)
     }
     
     func goBack() {
@@ -102,14 +91,28 @@ final class WebViewStore: NSObject, ObservableObject {
     }
 }
 
+// MARK: - Helper methods
+extension WebViewStore {
+    func addToHistory(title: String?, url: URL?) {
+        guard let url else { return }
+        
+        let item = HistoryItem(
+            title: title ?? url.absoluteString,
+            url: url,
+            date: Date()
+        )
+        history.insert(item, at: 0)
+    }
+}
+
 private extension WebViewStore {
     func isLikelyDomain(_ text: String) -> Bool {
-        // must contain dot AND valid TLD (like .com, .org)
+        // must contain dot
         let parts = text.split(separator: ".")
         
         guard parts.count >= 2 else { return false }
         
-        // last part (TLD) should be alphabetic and >= 2 chars
+        // last part should be alphabetic and >= 2 chars
         if let last = parts.last,
            last.count >= 2,
            last.allSatisfy({ $0.isLetter }) {
@@ -123,11 +126,11 @@ private extension WebViewStore {
         return false
     }
     
-    func searchOnGoogle(_ query: String) {
+    func search(_ query: String) {
         let allowed = CharacterSet.urlQueryAllowed
         let encoded = query.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
         
-        let urlString = "https://www.google.com/search?q=\(encoded)"
+        let urlString = "\(Self.defaultURL)/search?q=\(encoded)"
         
         guard let url = URL(string: urlString) else { return }
         

@@ -19,12 +19,9 @@ struct CustomWebView: NSViewRepresentable {
         let webView = store.webView
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
-
-        let config = WKWebViewConfiguration()
-        config.defaultWebpagePreferences.allowsContentJavaScript = true
-        
-        
         webView.allowsBackForwardNavigationGestures = true
+        webView.customUserAgent =
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
         
         return webView
     }
@@ -46,12 +43,15 @@ struct CustomWebView: NSViewRepresentable {
         
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
             print("Start loading:", webView.url?.absoluteString ?? "")
+            parent.store.currentURL = webView.url?.absoluteString ?? ""
             parent.store.isLoading = true
             parent.store.progress = 0.1
         }
         
         func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
             print("Content started arriving")
+            parent.store.canGoBack = webView.canGoBack
+            parent.store.canGoForward = webView.canGoForward
         }
         
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -63,6 +63,12 @@ struct CustomWebView: NSViewRepresentable {
                 self?.parent.store.isLoading = false
                 self?.parent.store.progress = 0
             }
+            
+            parent.store.addToHistory(
+                title: webView.title,
+                url: webView.url)
+            parent.store.canGoBack = webView.canGoBack
+            parent.store.canGoForward = webView.canGoForward
         }
         // MARK: - Navigation Decision
         
