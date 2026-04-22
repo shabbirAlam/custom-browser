@@ -15,7 +15,9 @@ final class WebViewStore: NSObject, ObservableObject {
     @Published var canGoBack: Bool = false
     @Published var canGoForward: Bool = false
     @Published var currentURL: String = "https://www.google.com"
-
+    @Published var progress: Double = 0.0
+    @Published var isLoading: Bool = false
+    
     override init() {
         let config = WKWebViewConfiguration()
         config.defaultWebpagePreferences.allowsContentJavaScript = true

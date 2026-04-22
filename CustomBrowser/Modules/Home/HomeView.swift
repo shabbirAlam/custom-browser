@@ -16,6 +16,15 @@ struct HomeView: View {
             getHeaderView()
                 .frame(maxWidth: .infinity, alignment: .leading)
             
+            if webStore.isLoading {
+                GeometryReader { geo in
+                    Rectangle()
+                        .fill(Color.blue)
+                        .frame(width: geo.size.width * webStore.progress, height: 2)
+                        .animation(.easeOut(duration: 0.2), value: webStore.progress)
+                }
+                .frame(height: 2)
+            }
             CustomWebView(store: webStore)
                 .onAppear {
                     webStore.load(urlText)

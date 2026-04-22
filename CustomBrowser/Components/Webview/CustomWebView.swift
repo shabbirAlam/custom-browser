@@ -46,6 +46,8 @@ struct CustomWebView: NSViewRepresentable {
         
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
             print("Start loading:", webView.url?.absoluteString ?? "")
+            parent.store.isLoading = true
+            parent.store.progress = 0.1
         }
         
         func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
@@ -54,8 +56,14 @@ struct CustomWebView: NSViewRepresentable {
         
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             print("Finished loading:", webView.url?.absoluteString ?? "")
+            
+            parent.store.currentURL = webView.url?.absoluteString ?? ""
+            parent.store.progress = 1.0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.parent.store.isLoading = false
+                self?.parent.store.progress = 0
+            }
         }
-        
         // MARK: - Navigation Decision
         
         func webView(
