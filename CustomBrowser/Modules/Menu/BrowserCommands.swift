@@ -41,6 +41,13 @@ struct BrowserCommands: Commands {
                 webStore.history.removeAll()
                 webStore.goToHome()
             }
+            
+            Divider()
+            
+            Button("Show Full History") {
+                webStore.load(PageTypes.history.rawValue)
+            }
+            .keyboardShortcut("y", modifiers: .command)
         }
         
         CommandMenu("Bookmarks") {

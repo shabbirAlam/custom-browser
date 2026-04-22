@@ -44,6 +44,18 @@ extension WebViewStore {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         
+        
+//        // Internal routes (like chrome://)
+//        if trimmed == "browser://history" {
+//            currentPage = .history
+//            return
+//        }
+//        
+//        if trimmed == "browser://home" {
+//            currentPage = .home
+//            return
+//        }
+        
         // If contains space → search
         if trimmed.contains(" ") {
             search(trimmed)

@@ -16,7 +16,6 @@ struct CustomBrowserApp: App {
             HomeView()
                 .environmentObject(webStore)
         }
-        
         .commands {
             BrowserCommands(webStore: webStore)
         }
