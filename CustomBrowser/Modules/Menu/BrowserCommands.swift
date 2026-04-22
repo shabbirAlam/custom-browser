@@ -42,5 +42,32 @@ struct BrowserCommands: Commands {
                 webStore.goToHome()
             }
         }
+        
+        CommandMenu("Bookmarks") {
+            Button("Add Bookmark") {
+                // Add bookmark
+            }
+            .keyboardShortcut("d", modifiers: .command)
+            
+            Divider()
+            
+//            ForEach(webStore.bookmark.prefix(10)) { item in
+//                Button(item.title) {
+//                    webStore.load(item.url)
+//                }
+//            }
+//            
+//            Divider()
+//            
+//            Button("Show All") {
+//                // show all
+//            }
+        }
+        
+        CommandGroup(after: .help) {
+            Button("Browser Help") {
+                webStore.load("https://www.google.com/search?q=browser%20help")
+            }
+        }
     }
 }
